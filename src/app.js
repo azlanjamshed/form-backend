@@ -89,13 +89,16 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   console.error(err);
 
-  res.status(err.statusCode || 500).json({
+  const statusCode = err.statusCode || 500;
+
+  const message =
+    process.env.NODE_ENV === "production" && statusCode >= 500
+      ? "Internal server error"
+      : err.message || "Something went wrong";
+
+  res.status(statusCode).json({
     success: false,
-    message:
-      process.env.NODE_ENV === "production"
-        ? "Internal server error"
-        : err.message,
+    message,
   });
 });
-
 module.exports = app;
