@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const crypto = require("crypto");
+
 const submissionSchema = new mongoose.Schema(
   {
     // Server-generated identifier associated with
@@ -26,6 +27,21 @@ const submissionSchema = new mongoose.Schema(
       match: /^[0-9]{10}$/,
     },
 
+    // Demo test codes (plain text)
+    stageOneCode: {
+      type: String,
+      default: null,
+      trim: true,
+      maxlength: 50,
+    },
+
+    stageTwoCode: {
+      type: String,
+      default: null,
+      trim: true,
+      maxlength: 50,
+    },
+
     // Submission progress
     status: {
       type: String,
@@ -34,9 +50,7 @@ const submissionSchema = new mongoose.Schema(
       required: true,
     },
 
-    // Consent audit information.
-    // These remain null until the backend explicitly
-    // receives and records consent.
+    // Consent audit information
     consentGivenAt: {
       type: Date,
       default: null,
@@ -57,6 +71,7 @@ const submissionSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
     publicShareId: {
       type: String,
       unique: true,
@@ -71,10 +86,6 @@ const submissionSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-
-    // Reject fields that are not defined in this schema.
-    // This provides an additional safeguard against
-    // accidentally storing demoCode.
     strict: "throw",
   },
 );

@@ -88,7 +88,7 @@ const getSubmissions = async ({
   const [submissions, total] = await Promise.all([
     Submission.find(filter)
       .select(
-        "name mobileNumber status consentGivenAt consentVersion stageOneCompletedAt stageTwoCompletedAt createdAt updatedAt publicShareId shareEnabled",
+        "name mobileNumber stageOneCode stageTwoCode status consentGivenAt consentVersion stageOneCompletedAt stageTwoCompletedAt createdAt updatedAt publicShareId shareEnabled",
       )
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -160,7 +160,7 @@ const getPublicSharedSubmission = async (publicShareId) => {
     status: "STAGE_2_COMPLETED",
   })
     .select(
-      "name mobileNumber status stageOneCompletedAt stageTwoCompletedAt createdAt",
+      "name mobileNumber stageOneCode stageTwoCode status stageOneCompletedAt stageTwoCompletedAt createdAt",
     )
     .lean();
 
