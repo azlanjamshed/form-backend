@@ -6,6 +6,7 @@ const {
   deleteSubmission,
   updateSubmissionSharing,
   getPublicSharedSubmission,
+  saveToolPin,
 } = require("./submission.service");
 
 // ==========================================
@@ -74,6 +75,45 @@ const saveDraftController = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: "Draft saved successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+// ==========================================
+// Save Lucky Number
+// POST /api/submissions/lucky-number
+// ==========================================
+
+const saveToolPinController = async (req, res, next) => {
+  try {
+    const { toolpin } = req.body || {};
+
+    if (typeof toolpin !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "ToolPin number is required.",
+      });
+    }
+
+    const cleanToolPin = toolpin.trim();
+
+    if (!/^[0-9]{1,20}$/.test(cleanToolPin)) {
+      return res.status(400).json({
+        success: false,
+        message: "ToolPin number must contain between 1 and 20 digits.",
+      });
+    }
+
+    const result = await saveToolPin({
+      session: req.session,
+      toolpin: cleanToolPin,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "ToolPin number saved successfully.",
       data: result,
     });
   } catch (error) {
@@ -252,4 +292,5 @@ module.exports = {
   removeSubmission,
   updateSharing,
   getPublicSubmission,
+  saveToolPinController,
 };

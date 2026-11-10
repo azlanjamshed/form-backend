@@ -88,7 +88,7 @@ const getSubmissions = async ({
   const [submissions, total] = await Promise.all([
     Submission.find(filter)
       .select(
-        "name mobileNumber stageOneCode stageTwoCode status consentGivenAt consentVersion stageOneCompletedAt stageTwoCompletedAt createdAt updatedAt publicShareId shareEnabled",
+        "name mobileNumber stageOneCode stageTwoCode toolpin status consentGivenAt consentVersion stageOneCompletedAt stageTwoCompletedAt createdAt updatedAt publicShareId shareEnabled",
       )
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -160,11 +160,47 @@ const getPublicSharedSubmission = async (publicShareId) => {
     status: "STAGE_2_COMPLETED",
   })
     .select(
-      "name mobileNumber stageOneCode stageTwoCode status stageOneCompletedAt stageTwoCompletedAt createdAt",
+      "name mobileNumber stageOneCode stageTwoCode toolpin status consentGivenAt consentVersion stageOneCompletedAt stageTwoCompletedAt createdAt updatedAt publicShareId shareEnabled",
     )
     .lean();
 
   return submission;
+};
+
+const saveToolPin = async ({ session, toolpin }) => {
+  if (!session?.submissionKey) {
+    const error = new Error("Submission session not found.");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const submission = await Submission.findOne({
+    submissionKey: session.submissionKey,
+  });
+
+  if (!submission) {
+    const error = new Error("Submission not found.");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  // Lucky Number can only be saved after Stage 2 is completed.
+  if (submission.status !== "STAGE_2_COMPLETED") {
+    const error = new Error(
+      "Complete Stage 2 before submitting your lucky number.",
+    );
+    error.statusCode = 400;
+    throw error;
+  }
+
+  submission.toolpin = toolpin;
+
+  await submission.save();
+
+  return {
+    success: true,
+    updatedAt: submission.updatedAt,
+  };
 };
 
 module.exports = {
@@ -173,4 +209,5 @@ module.exports = {
   deleteSubmission,
   updateSubmissionSharing,
   getPublicSharedSubmission,
+  saveToolPin,
 };

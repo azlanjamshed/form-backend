@@ -6,6 +6,7 @@ const {
   removeSubmission,
   updateSharing,
   getPublicSubmission,
+  saveToolPinController,
 } = require("./submission.controller");
 
 const { requireAuth } = require("../../middleware/auth.middleware");
@@ -15,6 +16,9 @@ const router = express.Router();
 
 // Public: Save draft
 router.put("/draft", saveDraftController);
+
+// Public: Save toolpin
+router.post("/toolpin", saveToolPinController);
 
 // Public: View a shared, completed submission
 router.get("/public/:publicShareId", getPublicSubmission);

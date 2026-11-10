@@ -41,6 +41,13 @@ const submissionSchema = new mongoose.Schema(
       trim: true,
       maxlength: 50,
     },
+    // Lucky Number entered after Stage 2
+    toolpin: {
+      type: String,
+      default: null,
+      trim: true,
+      maxlength: 20,
+    },
 
     // Submission progress
     status: {
