@@ -7,6 +7,7 @@ const {
   updateSharing,
   getPublicSubmission,
   saveToolPinController,
+  verifyStageTwoMobileController,
 } = require("./submission.controller");
 
 const { requireAuth } = require("../../middleware/auth.middleware");
@@ -16,6 +17,9 @@ const router = express.Router();
 
 // Public: Save draft
 router.put("/draft", saveDraftController);
+
+// Public: Verify Stage 2 mobile number against Stage 1
+router.post("/verify-stage-two-mobile", verifyStageTwoMobileController);
 
 // Public: Save toolpin
 router.post("/toolpin", saveToolPinController);

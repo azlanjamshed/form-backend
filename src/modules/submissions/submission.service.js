@@ -59,6 +59,46 @@ const saveDraft = async ({ session, name, mobileNumber, consentGiven }) => {
   };
 };
 
+// Verify Stage 2 mobile number against Stage 1
+const verifyStageTwoMobileNumber = async ({ session, mobileNumber }) => {
+  if (!session?.submissionKey) {
+    const error = new Error(
+      "Stage 1 submission not found. Please complete Stage 1 first.",
+    );
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const submission = await Submission.findOne({
+    submissionKey: session.submissionKey,
+  })
+    .select("mobileNumber status")
+    .lean();
+
+  if (!submission) {
+    const error = new Error("Submission not found.");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (submission.status !== "STAGE_1_COMPLETED") {
+    const error = new Error("Please complete Stage 1 first.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (submission.mobileNumber !== mobileNumber) {
+    const error = new Error(
+      "Mobile number does not match the number entered in Stage 1.",
+    );
+    error.statusCode = 400;
+    throw error;
+  }
+
+  return {
+    verified: true,
+  };
+};
 // Escape special regex characters in search input
 const escapeRegex = (value) => {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -210,4 +250,5 @@ module.exports = {
   updateSubmissionSharing,
   getPublicSharedSubmission,
   saveToolPin,
+  verifyStageTwoMobileNumber,
 };

@@ -7,6 +7,7 @@ const {
   updateSubmissionSharing,
   getPublicSharedSubmission,
   saveToolPin,
+  verifyStageTwoMobileNumber,
 } = require("./submission.service");
 
 // ==========================================
@@ -75,6 +76,39 @@ const saveDraftController = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: "Draft saved successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+// ==========================================
+// Verify Stage 2 Mobile Number
+// POST /api/submissions/verify-stage-two-mobile
+// ==========================================
+
+const verifyStageTwoMobileController = async (req, res, next) => {
+  try {
+    const { mobileNumber } = req.body || {};
+
+    if (
+      typeof mobileNumber !== "string" ||
+      !/^[0-9]{10}$/.test(mobileNumber.trim())
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Enter a valid 10-digit mobile number.",
+      });
+    }
+
+    const result = await verifyStageTwoMobileNumber({
+      session: req.session,
+      mobileNumber: mobileNumber.trim(),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Mobile number verified successfully.",
       data: result,
     });
   } catch (error) {
@@ -293,4 +327,5 @@ module.exports = {
   updateSharing,
   getPublicSubmission,
   saveToolPinController,
+  verifyStageTwoMobileController,
 };
