@@ -1,4 +1,4 @@
-const { authenticateUser } = require("./auth.service");
+const { authenticateUser, changeUserPassword } = require("./auth.service");
 
 const COOKIE_NAME = "verifyflow.token";
 
@@ -81,8 +81,49 @@ const getCurrentUser = (req, res) => {
   });
 };
 
+const changePassword = async (req, res, next) => {
+  try {
+    const currentPassword =
+      typeof req.body?.currentPassword === "string"
+        ? req.body.currentPassword
+        : "";
+
+    const newPassword =
+      typeof req.body?.newPassword === "string" ? req.body.newPassword : "";
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password and new password are required.",
+      });
+    }
+
+    if (newPassword.length < 8 || newPassword.length > 128) {
+      return res.status(400).json({
+        success: false,
+        message: "New password must contain between 8 and 128 characters.",
+      });
+    }
+
+    const user = await changeUserPassword({
+      userId: req.user.id,
+      currentPassword,
+      newPassword,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Password changed successfully.",
+      data: { user },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   login,
   logout,
   getCurrentUser,
+  changePassword,
 };

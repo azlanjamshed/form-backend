@@ -7,6 +7,8 @@ const {
 
 const { requireAuth } = require("../../middleware/auth.middleware");
 
+const { requireRole } = require("../../middleware/role.middleware");
+
 const { requirePermission } = require("../../middleware/permission.middleware");
 
 const router = express.Router();
@@ -20,6 +22,7 @@ router.get("/public", getPublicPageConfig);
 router.put(
   "/",
   requireAuth,
+  requireRole("admin"),
   requirePermission("pageConfig.update"),
   updatePublicPageConfig,
 );

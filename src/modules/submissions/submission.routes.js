@@ -12,6 +12,7 @@ const {
 
 const { requireAuth } = require("../../middleware/auth.middleware");
 const { requirePermission } = require("../../middleware/permission.middleware");
+const { requireRole } = require("../../middleware/role.middleware");
 
 const router = express.Router();
 
@@ -39,14 +40,15 @@ router.get(
 router.delete(
   "/:id",
   requireAuth,
+  requireRole("admin"),
   requirePermission("submissions.delete"),
   removeSubmission,
 );
-
 // Admin/staff: Enable or disable public sharing
 router.patch(
   "/:id/sharing",
   requireAuth,
+  requireRole("admin"),
   requirePermission("submissions.share"),
   updateSharing,
 );

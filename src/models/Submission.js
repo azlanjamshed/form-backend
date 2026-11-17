@@ -11,7 +11,12 @@ const submissionSchema = new mongoose.Schema(
       unique: true,
       immutable: true,
     },
-
+    collectorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+      immutable: true,
+    },
     // Stage 1 information
     name: {
       type: String,
@@ -98,6 +103,7 @@ const submissionSchema = new mongoose.Schema(
 );
 
 // Useful indexes for admin searches and filtering.
+submissionSchema.index({ collectorId: 1, createdAt: -1 });
 submissionSchema.index({ status: 1, createdAt: -1 });
 submissionSchema.index({ mobileNumber: 1 });
 submissionSchema.index({ name: 1 });

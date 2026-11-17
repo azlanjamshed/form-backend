@@ -26,6 +26,10 @@ const authenticateUser = async ({ email, password }) => {
     return null;
   }
 
+  // Record the successful login time.
+  user.lastLoginAt = new Date();
+  await user.save();
+
   // Generate JWT.
   const token = jwt.sign(
     {
@@ -45,6 +49,12 @@ const authenticateUser = async ({ email, password }) => {
     email: user.email,
     role: user.role,
     permissions: user.permissions,
+    mustChangePassword:
+      user.role === "staff" && user.mustChangePassword === true,
+    lastLoginAt: user.lastLoginAt,
+    ...(user.role === "staff" && {
+      formShareId: user.formShareId,
+    }),
   };
 
   return {
@@ -53,6 +63,52 @@ const authenticateUser = async ({ email, password }) => {
   };
 };
 
+const changeUserPassword = async ({ userId, currentPassword, newPassword }) => {
+  const user = await User.findById(userId).select("+passwordHash");
+
+  if (!user || !user.isActive) {
+    const error = new Error("User not found or account inactive.");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const isPasswordValid = await bcrypt.compare(
+    currentPassword,
+    user.passwordHash,
+  );
+
+  if (!isPasswordValid) {
+    const error = new Error("Current password is incorrect.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (currentPassword === newPassword) {
+    const error = new Error(
+      "New password must be different from your current password.",
+    );
+    error.statusCode = 400;
+    throw error;
+  }
+
+  user.passwordHash = await bcrypt.hash(newPassword, 12);
+
+  if (user.role === "staff") {
+    user.mustChangePassword = false;
+  }
+
+  await user.save();
+
+  return {
+    id: user._id.toString(),
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    mustChangePassword: false,
+  };
+};
+
 module.exports = {
   authenticateUser,
+  changeUserPassword,
 };

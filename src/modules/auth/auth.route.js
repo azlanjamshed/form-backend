@@ -1,21 +1,41 @@
 const express = require("express");
 const { rateLimit } = require("express-rate-limit");
 
-const { login, logout, getCurrentUser } = require("./auth.controller");
+const {
+  login,
+  logout,
+  getCurrentUser,
+  changePassword,
+} = require("./auth.controller");
 
-const { requireAuth } = require("../../middleware/auth.middleware");
+const {
+  requireAuth,
+  requireSession,
+} = require("../../middleware/auth.middleware");
 
 const router = express.Router();
 
 // Limit repeated login attempts.
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   limit: 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     success: false,
     message: "Too many login attempts. Please try again later.",
+  },
+});
+
+// Limit repeated password-change attempts.
+const passwordChangeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many password-change attempts. Please try again later.",
   },
 });
 
@@ -26,6 +46,16 @@ router.post("/login", loginLimiter, login);
 router.post("/logout", logout);
 
 // GET /api/auth/me
-router.get("/me", requireAuth, getCurrentUser);
+// Allows users to retrieve mustChangePassword status.
+router.get("/me", requireSession, getCurrentUser);
+
+// POST /api/auth/change-password
+// Allows authenticated users to change temporary passwords.
+router.post(
+  "/change-password",
+  passwordChangeLimiter,
+  requireSession,
+  changePassword,
+);
 
 module.exports = router;

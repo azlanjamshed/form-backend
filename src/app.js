@@ -9,6 +9,7 @@ const authRoutes = require("./modules/auth/auth.route");
 const pageConfigRoutes = require("./modules/pageConfig/pageConfig.routes");
 const submissionRoutes = require("./modules/submissions/submission.routes");
 const verificationRoutes = require("./modules/verification/verification.routes");
+const collectorRoutes = require("./modules/collectors/collector.routes");
 
 const app = express();
 
@@ -68,6 +69,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/page-config", pageConfigRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/verification", verificationRoutes);
+app.use("/api/collectors", collectorRoutes);
 
 // Health check.
 app.get("/api/health", (req, res) => {

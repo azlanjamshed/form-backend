@@ -1,13 +1,12 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-const requireAuth = async (req, res, next) => {
+const requireSession = async (req, res, next) => {
   try {
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET is missing from environment variables");
     }
 
-    // Read JWT from the HTTP-only cookie.
     const token = req.cookies?.["verifyflow.token"];
 
     if (!token) {
@@ -37,9 +36,8 @@ const requireAuth = async (req, res, next) => {
       });
     }
 
-    // Fetch the latest user details from MongoDB.
     const user = await User.findById(decoded.sub).select(
-      "name email role permissions isActive",
+      "name email role permissions isActive mustChangePassword formShareId",
     );
 
     if (!user || !user.isActive) {
@@ -49,21 +47,41 @@ const requireAuth = async (req, res, next) => {
       });
     }
 
-    // Attach safe user details to the request.
     req.user = {
       id: user._id.toString(),
       name: user.name,
       email: user.email,
       role: user.role,
       permissions: user.permissions,
+      mustChangePassword:
+        user.role === "staff" && user.mustChangePassword === true,
+      ...(user.role === "staff" && {
+        formShareId: user.formShareId,
+      }),
     };
-
     next();
   } catch (error) {
     next(error);
   }
 };
 
+const requireAuth = async (req, res, next) => {
+  await requireSession(req, res, (error) => {
+    if (error) return next(error);
+
+    if (req.user?.mustChangePassword) {
+      return res.status(403).json({
+        success: false,
+        code: "PASSWORD_CHANGE_REQUIRED",
+        message: "You must change your temporary password before continuing.",
+      });
+    }
+
+    next();
+  });
+};
+
 module.exports = {
   requireAuth,
+  requireSession,
 };

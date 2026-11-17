@@ -17,7 +17,7 @@ const {
 
 const saveDraftController = async (req, res, next) => {
   try {
-    const { name, mobileNumber, consentGiven } = req.body || {};
+    const { name, mobileNumber, consentGiven, formShareId } = req.body || {};
 
     if (typeof name !== "string") {
       return res.status(400).json({
@@ -63,6 +63,7 @@ const saveDraftController = async (req, res, next) => {
       name: cleanName,
       mobileNumber: cleanMobileNumber,
       consentGiven,
+      formShareId,
     });
 
     // Persist the session before responding.
@@ -204,6 +205,7 @@ const getAllSubmissions = async (req, res, next) => {
       limit,
       search,
       status,
+      user: req.user,
     });
 
     return res.status(200).json({
